@@ -38,15 +38,19 @@ bool OpenGL::CreateWindow(const char *title, uint32_t width, uint32_t height, bo
     this->a_WindowHeight = this->a_WindowWidth / 16 * 9;
   }
   this->a_WindowTitle = title;
+
+  glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
   this->m_Window = glfwCreateWindow(this->a_WindowWidth, this->a_WindowHeight, this->a_WindowTitle, NULL, NULL);
   if (this->m_Window == NULL) {
     std::cerr << "Could not create Window\n";
     glfwTerminate();
     return false;
   }
+  glfwDefaultWindowHints();
   if (!centered) {
     glfwMakeContextCurrent(this->m_Window);
     glfwSetFramebufferSizeCallback(this->m_Window, this->FramebufferSizeCallback);
+    glfwShowWindow(this->m_Window);
     return true;
   }
   else {
@@ -56,7 +60,9 @@ bool OpenGL::CreateWindow(const char *title, uint32_t width, uint32_t height, bo
     glfwSetWindowPos(this->m_Window,
 		   monitorX + (this->m_VideoMode->width - this->a_WindowWidth) / 2.0f,
 		   monitorY + (this->m_VideoMode->height - this->a_WindowHeight) / 2.0f);
+    glfwShowWindow(this->m_Window);
   }
+
   glfwMakeContextCurrent(this->m_Window);
   glfwSetFramebufferSizeCallback(this->m_Window, this->FramebufferSizeCallback);
   return true;

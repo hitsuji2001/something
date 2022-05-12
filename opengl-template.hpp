@@ -17,6 +17,7 @@ public:
 
   uint32_t a_VBO;
   uint32_t a_VAO;
+  uint32_t a_EBO;
 
   GLFWwindow *GetWindow();
   uint32_t GetShaderProgram();
