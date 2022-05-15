@@ -7,9 +7,21 @@ OpenGL::OpenGL() {
   this->m_VideoMode = glfwGetVideoMode(this->m_Monitors[0]);
   this->a_WindowWidth = this->m_VideoMode->width / 1.75f;
   this->a_WindowHeight = this->a_WindowWidth / 16 * 9;
+
+  this->a_CurrentMaxShaderProgram = 0;
+  this->m_ShaderProgram = new uint32_t[this->a_MaxShaderProgramSize];
+
+  this->m_VAO = new uint32_t[this->a_MaxBufferSize];
+  this->m_VBO = new uint32_t[this->a_MaxBufferSize];
+  this->m_EBO = new uint32_t[this->a_MaxBufferSize];
 }
 
 OpenGL::~OpenGL() {
+  delete[] this->m_VAO;
+  delete[] this->m_VBO;
+  delete[] this->m_EBO;
+
+  delete[] this->m_ShaderProgram;
   glfwTerminate();
 }
 
@@ -17,16 +29,45 @@ GLFWwindow *OpenGL::GetWindow() {
   return this->m_Window;
 }
 
-uint32_t OpenGL::GetShaderProgram() {
-  return this->a_ShaderProgram;
+uint32_t OpenGL::GetShaderProgram(uint32_t index) {
+  assert(index < this->a_MaxShaderProgramSize);
+  return this->m_ShaderProgram[index];
 }
 
-uint32_t OpenGL::GetVAO() {
-  return this->a_VAO;
+uint32_t *OpenGL::GetShaderProgramAdress(uint32_t index) {
+  assert(index < this->a_MaxShaderProgramSize);
+  return &this->m_ShaderProgram[index];
 }
 
-uint32_t OpenGL::GetVBO() {
-  return this->a_VBO;
+
+uint32_t *OpenGL::GetVAOAddress(uint32_t index) {
+  assert(index < this->a_MaxBufferSize);
+  return &this->m_VAO[index];
+}
+
+uint32_t *OpenGL::GetVBOAddress(uint32_t index) {
+  assert(index < this->a_MaxBufferSize);
+  return &this->m_VBO[index];
+}
+
+uint32_t *OpenGL::GetEBOAddress(uint32_t index) {
+  assert(index < this->a_MaxBufferSize);
+  return &this->m_EBO[index];
+}
+
+uint32_t OpenGL::GetVAO(uint32_t index) {
+  assert(index < this->a_MaxBufferSize);
+  return this->m_VAO[index];
+}
+
+uint32_t OpenGL::GetVBO(uint32_t index) {
+  assert(index < this->a_MaxBufferSize);
+  return this->m_VBO[index];
+}
+
+uint32_t OpenGL::GetEBO(uint32_t index) {
+  assert(index < this->a_MaxBufferSize);
+  return this->m_EBO[index];
 }
 
 bool OpenGL::CreateWindow(const char *title, uint32_t width, uint32_t height, bool centered) {
@@ -68,11 +109,22 @@ bool OpenGL::CreateWindow(const char *title, uint32_t width, uint32_t height, bo
   return true;
 }
 
-bool OpenGL::LoadShaders(const char *vertexFilePath, const char *fragmentFilePath) {
-  bool success;
-  success = this->CompileShaderFile(vertexFilePath, GL_VERTEX_SHADER, &this->a_VertexShader);
-  success &= this->CompileShaderFile(fragmentFilePath, GL_FRAGMENT_SHADER, &this->a_FragmentShader);
-  return success;
+bool OpenGL::LoadShaders(const char *vertexFilePath, const char *fragmentFilePath, GLuint *shaderProgram) {  
+  GLuint vertexShader = 0;
+  if (!this->CompileShaderFile(vertexFilePath, GL_VERTEX_SHADER, &vertexShader)) {
+    return false;
+  }
+
+  GLuint fragmentShader = 0;
+  if (!this->CompileShaderFile(fragmentFilePath, GL_FRAGMENT_SHADER, &fragmentShader)) {
+    return false;
+  }
+  
+  if (!this->LinkProgram(vertexShader, fragmentShader, shaderProgram)) {
+    return false;
+  }
+
+  return true;
 }
 
 bool OpenGL::InitGLFW() {
@@ -133,7 +185,7 @@ bool OpenGL::CompileShaderSource(const GLchar *source, GLenum shaderType, GLuint
     return false;
   }
 
-  std::cout << "[INFO]: Successfully compile " << type << " Shader" << std::endl;
+  std::cout << "[INFO]: Successfully compile " << type << " Shader[" << this->a_CurrentMaxShaderProgram << "]" << std::endl;
   return true;
 }
    
@@ -153,25 +205,26 @@ bool OpenGL::CompileShaderFile(const char *file_path, GLenum shaderType, GLuint 
   return success;
 }
      
-bool OpenGL::LinkProgram() {
-  this->a_ShaderProgram = glCreateProgram();
+bool OpenGL::LinkProgram(GLuint vertexShader, GLuint fragmentShader, GLuint *shaderProgram) {
+  *shaderProgram = glCreateProgram();
+  glAttachShader(*shaderProgram, vertexShader);
+  glAttachShader(*shaderProgram, fragmentShader);
 
-  glAttachShader(this->a_ShaderProgram, this->a_VertexShader);
-  glAttachShader(this->a_ShaderProgram, this->a_FragmentShader);
-  glLinkProgram(this->a_ShaderProgram);
+  glLinkProgram(*shaderProgram);
 
   GLint success = 0;
-  glGetProgramiv(this->a_ShaderProgram, GL_LINK_STATUS, &success);
+  glGetProgramiv(*shaderProgram, GL_LINK_STATUS, &success);
 
   if (!success) {
     GLchar logMessage[1024];
-    glGetProgramInfoLog(this->a_ShaderProgram, sizeof(logMessage), NULL, logMessage);
+    glGetProgramInfoLog(*shaderProgram, sizeof(logMessage), NULL, logMessage);
     std::cerr << "[ERROR]: Link program failed: " << logMessage << std::endl;
     return false;
   }
-  glDeleteShader(this->a_VertexShader);
-  glDeleteShader(this->a_FragmentShader);
+  glDeleteShader(vertexShader);
+  glDeleteShader(fragmentShader);
 
   std::cout << "[INFO]: Successfully link program" << std::endl;
+  this->a_CurrentMaxShaderProgram++;
   return success;
 }

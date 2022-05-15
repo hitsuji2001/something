@@ -5,7 +5,7 @@ SRC_APP="./main.cpp ./opengl-template.cpp ./glad/src/glad.c"
 CFLAGS="-Werror -Wall -Wextra -pedantic -ggdb"
 OFLAGS="-lGL -lX11 -lpthread -lXrandr -lXi -ldl"
 LIBS="opengl glfw3"
-OUT="unknown"
+OUT="something"
 
 set -xe
 
