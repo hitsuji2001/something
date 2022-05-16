@@ -1,6 +1,9 @@
 #include "./opengl-template.hpp"
 
+static OpenGL *s_Instance = nullptr;
+
 OpenGL::OpenGL() {
+  s_Instance = this;
   this->InitGLFW();
   this->m_Window = NULL;
   this->m_Monitors = glfwGetMonitors(&this->a_MonitorCount);
@@ -17,11 +20,6 @@ OpenGL::OpenGL() {
 }
 
 OpenGL::~OpenGL() {
-  delete[] this->m_VAO;
-  delete[] this->m_VBO;
-  delete[] this->m_EBO;
-
-  delete[] this->m_ShaderProgram;
   glfwTerminate();
 }
 
@@ -155,6 +153,11 @@ bool OpenGL::InitGLAD() {
 
 std::string OpenGL::SlurpFile(const char *file_path){
   std::ifstream file(file_path);
+  if (!file) {
+    std::cerr << "File " << file_path << " does not exist" << std::endl;
+    exit(1);
+  }
+
   std::string fileContent;
   std::string temp;
 
@@ -185,7 +188,7 @@ bool OpenGL::CompileShaderSource(const GLchar *source, GLenum shaderType, GLuint
     return false;
   }
 
-  std::cout << "[INFO]: Successfully compile " << type << " Shader[" << this->a_CurrentMaxShaderProgram << "]" << std::endl;
+  std::cout << "[INFO]: Successfully compile `" << type << " Shader[" << this->a_CurrentMaxShaderProgram << "]`" << std::endl;
   return true;
 }
    
@@ -194,12 +197,12 @@ bool OpenGL::CompileShaderFile(const char *file_path, GLenum shaderType, GLuint 
   const char *source = fileContent.c_str();
   
   if (source == NULL) {
-    std::cerr << "[ERROR]: Failed to read file " << file_path << std::endl;
+    std::cerr << "[ERROR]: Failed to read file `" << file_path << "`" << std::endl;
     return false;
   }
   bool success = this->CompileShaderSource(source, shaderType, shader);
   if (!success) {
-    std::cerr << "[ERROR]: Failed to compile " << file_path << " (shader file)" << std::endl;
+    std::cerr << "[ERROR]: Failed to compile `" << file_path << "` (shader file)" << std::endl;
   }
   
   return success;
@@ -218,13 +221,24 @@ bool OpenGL::LinkProgram(GLuint vertexShader, GLuint fragmentShader, GLuint *sha
   if (!success) {
     GLchar logMessage[1024];
     glGetProgramInfoLog(*shaderProgram, sizeof(logMessage), NULL, logMessage);
-    std::cerr << "[ERROR]: Link program failed: " << logMessage << std::endl;
+    std::cerr << "[ERROR]: Link shader program[" << this->a_CurrentMaxShaderProgram << "] failed: " << logMessage << std::endl;
     return false;
   }
   glDeleteShader(vertexShader);
   glDeleteShader(fragmentShader);
 
-  std::cout << "[INFO]: Successfully link program" << std::endl;
+  std::cout << "[INFO]: Successfully link `Shader Program[" << this->a_CurrentMaxShaderProgram << "]`" << std::endl;
   this->a_CurrentMaxShaderProgram++;
   return success;
+}
+
+void OpenGL::CleanUp() {
+  delete[] this->m_VAO;
+  std::cout << "[INFO]: Successfully delete `VAOs`" << std::endl;
+  delete[] this->m_VBO;
+  std::cout << "[INFO]: Successfully delete `VBOs`" << std::endl;
+  delete[] this->m_EBO;
+  std::cout << "[INFO]: Successfully delete `EBOs`" << std::endl;
+  delete[] this->m_ShaderProgram;
+  std::cout << "[INFO]: Successfully delete `Shader Programs`" << std::endl;
 }

@@ -10,9 +10,9 @@
 
 class OpenGL {
 public:
-  static OpenGL& GetInstance() {
-    static OpenGL instance;
-    return instance;
+  static OpenGL &CreateInstance() {
+    static OpenGL opengl;
+    return opengl;
   }
   ~OpenGL();
 
@@ -21,7 +21,7 @@ public:
 
   uint32_t *GetShaderProgramAdress(uint32_t index);
   uint32_t GetShaderProgram(uint32_t index);
-  bool CompileShaderFile(const char *filePath, GLenum shaderType, GLuint *shader);  bool LoadShaders(const char *vertexFilePath, const char *fragmentFilePath, GLuint *shaderProgram);
+  bool LoadShaders(const char *vertexFilePath, const char *fragmentFilePath, GLuint *shaderProgram);
   bool InitGLAD();
 
   uint32_t GetVAO(uint32_t index);
@@ -32,16 +32,18 @@ public:
 
   uint32_t GetEBO(uint32_t index);
   uint32_t *GetEBOAddress(uint32_t index);
+
+  void CleanUp();
 protected:
   OpenGL();
-  OpenGL(OpenGL const&);
-  void operator=(OpenGL const&);
+  OpenGL(const OpenGL&) = delete;
 
 private:
   bool InitGLFW();
   static void FramebufferSizeCallback(GLFWwindow *window, int width, int height);
   std::string SlurpFile(const char *filePath);
   bool CompileShaderSource(const GLchar *source, GLenum shaderType, GLuint *shader);
+  bool CompileShaderFile(const char *filePath, GLenum shaderType, GLuint *shader);
   bool LinkProgram(GLuint vertexShader, GLuint fragmentShader, GLuint *shaderProgram);
 
 private:
