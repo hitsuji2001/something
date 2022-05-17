@@ -1,22 +1,32 @@
-#include "./opengl-template.hpp"
-
-static OpenGL *s_Instance = nullptr;
+#include "../include/opengl-template.hpp"
 
 OpenGL::OpenGL() {
-  s_Instance = this;
   this->InitGLFW();
-  this->m_Window = NULL;
-  this->m_Monitors = glfwGetMonitors(&this->a_MonitorCount);
-  this->m_VideoMode = glfwGetVideoMode(this->m_Monitors[0]);
-  this->a_WindowWidth = this->m_VideoMode->width / 1.75f;
-  this->a_WindowHeight = this->a_WindowWidth / 16 * 9;
-
+  this->WindowSetUpAttributes();
   this->a_CurrentMaxShaderProgram = 0;
   this->m_ShaderProgram = new uint32_t[this->a_MaxShaderProgramSize];
 
   this->m_VAO = new uint32_t[this->a_MaxBufferSize];
   this->m_VBO = new uint32_t[this->a_MaxBufferSize];
   this->m_EBO = new uint32_t[this->a_MaxBufferSize];
+}
+
+void OpenGL::CleanUp() {
+  glDeleteVertexArrays(this->a_MaxBufferSize, this->m_VAO);
+  glDeleteBuffers(this->a_MaxBufferSize, this->m_VBO);
+  glDeleteBuffers(this->a_MaxBufferSize, this->m_EBO);
+  for (uint32_t i = 0; i < this->a_MaxShaderProgramSize; ++i) {
+    glDeleteProgram(this->m_ShaderProgram[i]);
+  }
+
+  delete[] this->m_VAO;
+  std::cout << "[INFO]: Successfully delete `VAOs`" << std::endl;
+  delete[] this->m_VBO;
+  std::cout << "[INFO]: Successfully delete `VBOs`" << std::endl;
+  delete[] this->m_EBO;
+  std::cout << "[INFO]: Successfully delete `EBOs`" << std::endl;
+  delete[] this->m_ShaderProgram;
+  std::cout << "[INFO]: Successfully delete `Shader Programs`" << std::endl;
 }
 
 OpenGL::~OpenGL() {
@@ -28,43 +38,78 @@ GLFWwindow *OpenGL::GetWindow() {
 }
 
 uint32_t OpenGL::GetShaderProgram(uint32_t index) {
-  assert(index < this->a_MaxShaderProgramSize);
+  if (index >= this->a_MaxShaderProgramSize) {
+    std::cerr << "[ERROR]: Index out of bound. There is no Shader Program with such index: " << index << std::endl;
+    std::cerr << "         Max number of Shader Programs are: " << this->a_MaxShaderProgramSize << std::endl;
+    exit(1);
+  }
   return this->m_ShaderProgram[index];
 }
 
 uint32_t *OpenGL::GetShaderProgramAdress(uint32_t index) {
-  assert(index < this->a_MaxShaderProgramSize);
+  if (index >= this->a_MaxShaderProgramSize) {
+    std::cerr << "[ERROR]: Index out of bound. There is no Shader Program with such index: " << index << std::endl;
+    std::cerr << "         Max number of Shader Programs are: " << this->a_MaxShaderProgramSize << std::endl;
+    exit(1);
+  }
   return &this->m_ShaderProgram[index];
 }
 
+uint32_t OpenGL::GetMaxShaderProgramSize() {
+  return this->a_MaxShaderProgramSize;
+}
 
 uint32_t *OpenGL::GetVAOAddress(uint32_t index) {
-  assert(index < this->a_MaxBufferSize);
+  if (index >= this->a_MaxBufferSize) {
+    std::cerr << "[ERROR]: Index out of bound. There is no VAO with such index: " << index << std::endl;;
+    std::cerr << "         Max number of VAOs  are: " << this->a_MaxBufferSize << std::endl;
+    exit(1);
+  }
   return &this->m_VAO[index];
 }
 
 uint32_t *OpenGL::GetVBOAddress(uint32_t index) {
-  assert(index < this->a_MaxBufferSize);
+  if (index >= this->a_MaxBufferSize) {
+    std::cerr << "[ERROR]: Index out of bound. There is no VBO with such index: " << index << std::endl;
+    std::cerr << "         Max number of VBOs  are: " << this->a_MaxBufferSize << std::endl;
+    exit(1);
+  }
   return &this->m_VBO[index];
 }
 
 uint32_t *OpenGL::GetEBOAddress(uint32_t index) {
-  assert(index < this->a_MaxBufferSize);
+  if (index >= this->a_MaxBufferSize) {
+    std::cerr << "[ERROR]: Index out of bound. There is no EBO with such index: " << index << std::endl;
+    std::cerr << "         Max number of EBOs  are: " << this->a_MaxBufferSize << std::endl;
+    exit(1);
+  }
   return &this->m_EBO[index];
 }
 
 uint32_t OpenGL::GetVAO(uint32_t index) {
-  assert(index < this->a_MaxBufferSize);
+  if (index >= this->a_MaxBufferSize) {
+    std::cerr << "[ERROR]: Index out of bound. There is no VAO with such index: " << index << std::endl;;
+    std::cerr << "         Max number of VAOs  are: " << this->a_MaxBufferSize << std::endl;
+    exit(1);
+  }
   return this->m_VAO[index];
 }
 
 uint32_t OpenGL::GetVBO(uint32_t index) {
-  assert(index < this->a_MaxBufferSize);
+  if (index >= this->a_MaxBufferSize) {
+    std::cerr << "[ERROR]: Index out of bound. There is no VBO with such index: " << index << std::endl;
+    std::cerr << "         Max number of VBOs  are: " << this->a_MaxBufferSize << std::endl;
+    exit(1);
+  }
   return this->m_VBO[index];
 }
 
 uint32_t OpenGL::GetEBO(uint32_t index) {
-  assert(index < this->a_MaxBufferSize);
+  if (index >= this->a_MaxBufferSize) {
+    std::cerr << "[ERROR]: Index out of bound. There is no EBO with such index: " << index;
+    std::cerr << ". Max number of EBOs  are: " << this->a_MaxBufferSize << std::endl;
+    exit(1);
+  }
   return this->m_EBO[index];
 }
 
@@ -151,7 +196,7 @@ bool OpenGL::InitGLAD() {
   return true;
 }
 
-std::string OpenGL::SlurpFile(const char *file_path){
+std::string OpenGL::GetFileContents(const char *file_path){
   std::ifstream file(file_path);
   if (!file) {
     std::cerr << "File " << file_path << " does not exist" << std::endl;
@@ -193,7 +238,7 @@ bool OpenGL::CompileShaderSource(const GLchar *source, GLenum shaderType, GLuint
 }
    
 bool OpenGL::CompileShaderFile(const char *file_path, GLenum shaderType, GLuint *shader){
-  std::string fileContent = this->SlurpFile(file_path);
+  std::string fileContent = this->GetFileContents(file_path);
   const char *source = fileContent.c_str();
   
   if (source == NULL) {
@@ -232,13 +277,10 @@ bool OpenGL::LinkProgram(GLuint vertexShader, GLuint fragmentShader, GLuint *sha
   return success;
 }
 
-void OpenGL::CleanUp() {
-  delete[] this->m_VAO;
-  std::cout << "[INFO]: Successfully delete `VAOs`" << std::endl;
-  delete[] this->m_VBO;
-  std::cout << "[INFO]: Successfully delete `VBOs`" << std::endl;
-  delete[] this->m_EBO;
-  std::cout << "[INFO]: Successfully delete `EBOs`" << std::endl;
-  delete[] this->m_ShaderProgram;
-  std::cout << "[INFO]: Successfully delete `Shader Programs`" << std::endl;
+void OpenGL::WindowSetUpAttributes() {
+  this->m_Window = NULL;
+  this->m_Monitors = glfwGetMonitors(&this->a_MonitorCount);
+  this->m_VideoMode = glfwGetVideoMode(this->m_Monitors[0]);
+  this->a_WindowWidth = this->m_VideoMode->width / 1.75f;
+  this->a_WindowHeight = this->a_WindowWidth / 16 * 9;
 }

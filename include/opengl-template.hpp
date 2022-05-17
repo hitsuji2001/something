@@ -16,11 +16,13 @@ public:
   }
   ~OpenGL();
 
-  bool CreateWindow(const char *title, uint32_t width = 0, uint32_t height = 0, bool centered = true);
+  bool CreateWindow(const char *title, uint32_t width = 0, uint32_t height = 0, bool centeredOnStartUp = true);
   GLFWwindow *GetWindow();
 
   uint32_t *GetShaderProgramAdress(uint32_t index);
   uint32_t GetShaderProgram(uint32_t index);
+  uint32_t GetMaxShaderProgramSize();
+
   bool LoadShaders(const char *vertexFilePath, const char *fragmentFilePath, GLuint *shaderProgram);
   bool InitGLAD();
 
@@ -40,8 +42,9 @@ protected:
 
 private:
   bool InitGLFW();
+  void WindowSetUpAttributes();
   static void FramebufferSizeCallback(GLFWwindow *window, int width, int height);
-  std::string SlurpFile(const char *filePath);
+  std::string GetFileContents(const char *filePath);
   bool CompileShaderSource(const GLchar *source, GLenum shaderType, GLuint *shader);
   bool CompileShaderFile(const char *filePath, GLenum shaderType, GLuint *shader);
   bool LinkProgram(GLuint vertexShader, GLuint fragmentShader, GLuint *shaderProgram);
