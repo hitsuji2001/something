@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CXX="${CXX:-g++}"
-SRC_APP="./src/main.cpp ./src/opengl-template.cpp ./glad/src/glad.c"
+SRC_APP="./src/main.cpp ./opengl-templates/src/*.cpp ./glad/src/glad.c"
 CFLAGS="-Werror -Wall -Wextra -pedantic -ggdb"
 OFLAGS="-lGL -lX11 -lpthread -lXrandr -lXi -ldl"
 LIBS="opengl glfw3"

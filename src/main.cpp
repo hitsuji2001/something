@@ -5,7 +5,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "../include/opengl-template.hpp"
+#include "../opengl-templates/header/opengl-template.hpp"
 
 void process_input(GLFWwindow *window) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS or
@@ -36,9 +36,8 @@ int main() {
 
   OpenGL &opengl = OpenGL::CreateInstance();
 
-  opengl.CreateWindow("Ugrhhh");
-  opengl.InitGLAD();
-  opengl.LoadShaders(vsh_path, fsh_path, opengl.GetShaderProgramAdress(0));
+  opengl.GetWindow()->CreateWindow("Ugrhhh");
+  opengl.GetShader()->LoadShaders(vsh_path, fsh_path);
 
   glGenVertexArrays(1, opengl.GetVAOAddress(0));
   glGenBuffers(1, opengl.GetVBOAddress(0));
@@ -58,25 +57,24 @@ int main() {
   glEnableVertexAttribArray(1);
 
   glBindVertexArray(0);
-  while (!glfwWindowShouldClose(opengl.GetWindow())) {
-    process_input(opengl.GetWindow());
+  while (!glfwWindowShouldClose(opengl.GetWindow()->GetOpenGLWindow())) {
+    process_input(opengl.GetWindow()->GetOpenGLWindow());
 
     glClearColor(0.93f, 0.94f, 0.82f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     float time = glfwGetTime();
-    float r = (sin(time) / 2.0f) + 0.5f;
-    float g = (cos(time) / 2.0f) + 0.5f;
+    float r = (sin(time) / 2.0f) + 0.25f;
+    float g = (cos(time) / 2.0f) + 0.25f;
     float b = (tan(time) / 2.0f) + 0.5f;
 
-    int vertexColor = glGetUniformLocation(opengl.GetShaderProgram(0), "outColor");
-
-    glUseProgram(opengl.GetShaderProgram(0));
+    int vertexColor = glGetUniformLocation(opengl.GetShader()->m_ProgramID, "outColor");
+    opengl.GetShader()->Use();
     glUniform4f(vertexColor, r, g, b, 1.0f);
     glBindVertexArray(opengl.GetVAO(0));
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-    glfwSwapBuffers(opengl.GetWindow());
+    glfwSwapBuffers(opengl.GetWindow()->GetOpenGLWindow());
     glfwPollEvents();
   }
 
