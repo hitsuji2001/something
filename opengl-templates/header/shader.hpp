@@ -9,7 +9,7 @@
 
 class Shader {
 public:
-  uint32_t m_ProgramID;
+  GLuint m_ProgramID;
   Shader();
   Shader(const char *vertexPath, const char *fragmentPath);
   ~Shader();

@@ -1,10 +1,10 @@
 #include "../header/opengl-template.hpp"
 
 OpenGL::OpenGL() {
-  this->a_CurrentMaxShaderProgram = 0;
-
   this->m_Window = new Window();
   this->m_Shader = new Shader();
+
+  this->m_Texture = new Texture[this->a_MaxTextureSize];
   this->m_VAO = new uint32_t[this->a_MaxBufferSize];
   this->m_VBO = new uint32_t[this->a_MaxBufferSize];
   this->m_EBO = new uint32_t[this->a_MaxBufferSize];
@@ -15,6 +15,8 @@ void OpenGL::CleanUp() {
   glDeleteBuffers(this->a_MaxBufferSize, this->m_VBO);
   glDeleteBuffers(this->a_MaxBufferSize, this->m_EBO);
 
+  delete[] this->m_Texture;
+  std::cout << "[INFO]: Successfully delete `Textures`" << std::endl;
   delete[] this->m_VAO;
   std::cout << "[INFO]: Successfully delete `VAOs`" << std::endl;
   delete[] this->m_VBO;
@@ -31,6 +33,14 @@ OpenGL::~OpenGL() {
 
 Shader *OpenGL::GetShader() {
   return this->m_Shader;
+}
+
+Texture *OpenGL::GetTextureAt(uint32_t index) {
+  if (index >= this->a_MaxTextureSize) {
+    std::cerr << "[ERROR]: Index out of bound: `" << index << "`." << std::endl;
+    std::cerr << "         Max number of Texture is: `" << this->a_MaxTextureSize << "`. Considering changing the value in the `opengl-templates` header file." << std::endl;
+  }
+  return &this->m_Texture[index];
 }
 
 uint32_t *OpenGL::GetVAOAddress(uint32_t index) {

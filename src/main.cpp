@@ -5,6 +5,10 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "../opengl-templates/header/opengl-template.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include "../opengl-templates/header/stb_image.h"
@@ -24,6 +28,7 @@ int main() {
   const char *vsh_path = "./shader/vertex.glsl";
   const char *fsh_path = "./shader/fragment.glsl";
   const char *img_path = "./shader/ava.jpg";
+  const char *img_path2 = "./shader/awesomeface.png";
 
   float vertices[] = {
     // positions        // colors         // texture coodinates
@@ -40,7 +45,7 @@ int main() {
 
   OpenGL &opengl = OpenGL::CreateInstance();
 
-  opengl.GetWindow()->CreateWindow("Ugrhhh", 1024, 1024);
+  opengl.GetWindow()->CreateWindow("Ugrhhh");
   opengl.GetShader()->LoadShaders(vsh_path, fsh_path);
 
   glGenVertexArrays(1, opengl.GetVAOAddress(0));
@@ -64,24 +69,15 @@ int main() {
 
   glBindVertexArray(0);
 
-  int width, height, nr_channels;
-  unsigned char *data = stbi_load(img_path, &width, &height, &nr_channels, 0);
-  if(data == NULL) {
-    std::cerr << "Could not load image" << std::endl;
-    exit(1);
-  }
-  uint32_t texture;
-  glGenTextures(1, &texture);
-  glBindTexture(GL_TEXTURE_2D, texture);
+  opengl.GetTextureAt(0)->CreateTexture(GL_TEXTURE_2D, GL_MIRRORED_REPEAT, GL_LINEAR);
+  opengl.GetTextureAt(0)->LoadTexture(img_path, GL_RGB);
 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  opengl.GetTextureAt(1)->CreateTexture(GL_TEXTURE_2D, GL_REPEAT, GL_LINEAR);
+  opengl.GetTextureAt(1)->LoadTexture(img_path2, GL_RGBA);
 
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-  glGenerateMipmap(GL_TEXTURE_2D);
-  stbi_image_free(data);
+  opengl.GetShader()->Use();
+  opengl.GetShader()->SetInteger("texture1", 0);
+  opengl.GetShader()->SetInteger("texture2", 1);
 
   while (!glfwWindowShouldClose(opengl.GetWindow()->GetOpenGLWindow())) {
     process_input(opengl.GetWindow()->GetOpenGLWindow());
@@ -92,10 +88,12 @@ int main() {
     float time = glfwGetTime();
     float r = (sin(time) / 2.0f) + 0.25f;
     float g = (cos(time) / 2.0f) + 0.25f;
-    float b = (tan(time) / 2.0f) + 0.5f;
+    float b = (sin(2.0f * time) / 2.0f) + 0.5f;
 
     int vertexColor = glGetUniformLocation(opengl.GetShader()->m_ProgramID, "outColor");
-    glBindTexture(GL_TEXTURE_2D, texture);
+
+    opengl.GetTextureAt(0)->ActiveTexture(GL_TEXTURE0);
+    opengl.GetTextureAt(1)->ActiveTexture(GL_TEXTURE1);
 
     opengl.GetShader()->Use();
     glUniform4f(vertexColor, r, g, b, 1.0f);

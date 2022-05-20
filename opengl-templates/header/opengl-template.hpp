@@ -3,6 +3,7 @@
 
 #include "../header/shader.hpp"
 #include "../header/window.hpp"
+#include "../header/texture.hpp"
 
 class OpenGL {
 public:
@@ -11,9 +12,10 @@ public:
     return opengl;
   }
   ~OpenGL();
-
+  
   Window *GetWindow();
   Shader *GetShader();
+  Texture *GetTextureAt(uint32_t index);
 
   uint32_t GetVAO(uint32_t index);
   uint32_t *GetVAOAddress(uint32_t index);
@@ -30,21 +32,16 @@ protected:
   OpenGL(const OpenGL&) = delete;
 
 private:
-  bool InitGLFW();
-  void WindowSetUpAttributes();
-  static void FramebufferSizeCallback(GLFWwindow *window, int width, int height);
-
-private:
   Window *m_Window;
   Shader *m_Shader;
+  Texture *m_Texture;
   
   uint32_t *m_VAO;
   uint32_t *m_VBO;
   uint32_t *m_EBO;
 
-  uint32_t a_CurrentMaxShaderProgram;
-
   const uint32_t a_MaxBufferSize = 10;
+  const uint32_t a_MaxTextureSize = 10;
   const uint32_t a_MaxShaderProgramSize = 10;
 };
 
