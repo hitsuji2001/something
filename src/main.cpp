@@ -9,9 +9,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "../opengl-templates/header/opengl-template.hpp"
 #define STB_IMAGE_IMPLEMENTATION
-#include "../opengl-templates/header/stb_image.h"
+#include "../opengl-templates/header/opengl-template.hpp"
 
 void process_input(GLFWwindow *window) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS or
