@@ -95,8 +95,23 @@ int main() {
     opengl.GetTextureAt(1)->ActiveTexture(GL_TEXTURE1);
 
     opengl.GetShader()->Use();
+
+    glm::mat4 transform = glm::mat4(1.0f);
+    transform = glm::rotate(transform, time, glm::vec3(0.0f, 0.0f, -1.0f));
+    transform = glm::translate(transform, glm::vec3(0.0f, 1.0f, 0.0f));
+    transform = glm::rotate(transform, time, glm::vec3(0.0f, 0.0f, -1.0f));
+
+    uint32_t transformLoc = glGetUniformLocation(opengl.GetShader()->m_ProgramID, "transform");
+    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+
     glUniform4f(vertexColor, r, g, b, 1.0f);
     glBindVertexArray(opengl.GetVAO(0));
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+    transform = glm::mat4(1.0f);
+    transform = glm::scale(transform, sin(time) * glm::vec3(1.0f, 1.0f, 1.0f));
+    transform = glm::rotate(transform, time, glm::vec3(0.0f, 0.0f, 1.0f));
+    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     glfwSwapBuffers(opengl.GetWindow()->GetOpenGLWindow());
