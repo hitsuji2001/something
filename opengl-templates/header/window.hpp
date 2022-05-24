@@ -13,6 +13,12 @@ public:
   bool CreateWindow(const char *title, uint32_t width = 0, uint32_t height = 0, bool centeredOnStartUp = true);
   GLFWwindow *GetOpenGLWindow();
   
+public:
+  uint32_t GetWidth();
+  uint32_t GetHeight();
+
+  void SetWidth(uint32_t value);
+  void SetHeight(uint32_t value);
 private:
   bool InitGLFW();
   bool InitGLAD();

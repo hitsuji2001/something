@@ -30,34 +30,85 @@ int main() {
   const char *img_path2 = "./shader/awesomeface.png";
 
   float vertices[] = {
-    // positions        // colors         // texture coodinates
-    -0.5f,  0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // top left
-     0.5f,  0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, // top right
-     0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, // bottom right
-    -0.5f, -0.5f, 0.5f, 0.5f, 0.6f, 0.7f, 0.0f, 0.0f  // bottom left
+     // positions        // colors         // texture coodinates
+    -0.5f, -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f,
+     0.5f, -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f,
+     0.5f,  0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f,
+    -0.5f,  0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f,
+
+    -0.5f, -0.5f,  0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 0.0f,
+     0.5f, -0.5f,  0.5f, 0.0f, 0.5f, 0.0f, 1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f, 0.0f, 0.5f, 0.0f, 1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f, 0.0f, 0.5f, 0.0f, 1.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 0.0f,
+
+    -0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 0.5f, 1.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 0.5f, 1.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.5f, 0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.5f, 0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 0.5f, 0.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 0.5f, 1.0f, 0.0f,
+
+     0.5f,  0.5f,  0.5f, 0.0f, 0.5f, 0.0f, 1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f, 0.0f, 0.5f, 0.0f, 1.0f, 1.0f,
+     0.5f, -0.5f, -0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 1.0f,
+     0.5f, -0.5f,  0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 0.0f,
+     0.5f,  0.5f,  0.5f, 0.0f, 0.5f, 0.0f, 1.0f, 0.0f,
+
+    -0.5f, -0.5f, -0.5f, 0.5f, 0.0f, 0.2f, 0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f,
+     0.5f, -0.5f,  0.5f, 0.5f, 0.3f, 0.0f, 1.0f, 0.0f,
+     0.5f, -0.5f,  0.5f, 0.5f, 0.0f, 0.9f, 1.0f, 0.0f,
+    -0.5f, -0.5f,  0.5f, 0.5f, 0.2f, 0.0f, 0.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f,
+
+    -0.5f,  0.5f, -0.5f, 0.5f, 0.6f, 0.9f, 0.0f, 1.0f,
+     0.5f,  0.5f, -0.5f, 0.5f, 0.6f, 0.9f, 1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f, 0.5f, 0.6f, 0.9f, 1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f, 0.5f, 0.6f, 0.9f, 1.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f, 0.5f, 0.6f, 0.9f, 0.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f, 0.5f, 0.6f, 0.9f, 0.0f, 1.0f
   };
 
-  uint32_t indices[] = {
-    0, 1, 2,
-    0, 3, 2
+  glm::vec3 cubePositions[] = {
+    glm::vec3( 0.0f,  0.0f,  0.0f),
+    glm::vec3( 2.0f,  5.0f, -15.0f),
+    glm::vec3(-1.5f, -2.2f, -2.5f),
+    glm::vec3(-3.8f, -2.0f, -12.3f),  
+    glm::vec3( 2.4f, -0.4f, -3.5f),  
+    glm::vec3(-1.7f,  3.0f, -7.5f),  
+    glm::vec3( 1.3f, -2.0f, -2.5f),  
+    glm::vec3( 1.5f,  2.0f, -2.5f), 
+    glm::vec3( 1.5f,  0.2f, -1.5f), 
+    glm::vec3(-1.3f,  1.0f, -1.5f)  
   };
+
+  // uint32_t indices[] = {
+  //   0, 1, 2,
+  //   0, 3, 2
+  // };
 
   OpenGL &opengl = OpenGL::CreateInstance();
 
   opengl.GetWindow()->CreateWindow("Ugrhhh");
+  glEnable(GL_DEPTH_TEST);
   opengl.GetShader()->LoadShaders(vsh_path, fsh_path);
 
   glGenVertexArrays(1, opengl.GetVAOAddress(0));
   glGenBuffers(1, opengl.GetVBOAddress(0));
-  glGenBuffers(1, opengl.GetEBOAddress(0));
+  // glGenBuffers(1, opengl.GetEBOAddress(0));
 
   glBindVertexArray(opengl.GetVAO(0));
 
   glBindBuffer(GL_ARRAY_BUFFER, opengl.GetVBO(0));
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl.GetEBO(0));
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+  // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl.GetEBO(0));
+  // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) 0);
   glEnableVertexAttribArray(0);
@@ -68,10 +119,10 @@ int main() {
 
   glBindVertexArray(0);
 
-  opengl.GetTextureAt(0)->CreateTexture(GL_TEXTURE_2D, GL_MIRRORED_REPEAT, GL_LINEAR);
+  opengl.GetTextureAt(0)->CreateTexture(GL_TEXTURE_2D);
   opengl.GetTextureAt(0)->LoadTexture(img_path, GL_RGB);
 
-  opengl.GetTextureAt(1)->CreateTexture(GL_TEXTURE_2D, GL_REPEAT, GL_LINEAR);
+  opengl.GetTextureAt(1)->CreateTexture(GL_TEXTURE_2D);
   opengl.GetTextureAt(1)->LoadTexture(img_path2, GL_RGBA);
 
   opengl.GetShader()->Use();
@@ -81,13 +132,15 @@ int main() {
   while (!glfwWindowShouldClose(opengl.GetWindow()->GetOpenGLWindow())) {
     process_input(opengl.GetWindow()->GetOpenGLWindow());
 
-    glClearColor(0.93f, 0.94f, 0.82f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-
     float time = glfwGetTime();
     float r = (sin(time) / 2.0f) + 0.25f;
     float g = (cos(time) / 2.0f) + 0.25f;
     float b = (sin(2.0f * time) / 2.0f) + 0.5f;
+
+    // glClearColor(0.93f, 0.94f, 0.82f, 1.0f);
+    glClearColor(r * cos(time), g * sin(time), b * cos(time * 2), 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 
     int vertexColor = glGetUniformLocation(opengl.GetShader()->m_ProgramID, "outColor");
 
@@ -96,23 +149,30 @@ int main() {
 
     opengl.GetShader()->Use();
 
-    glm::mat4 transform = glm::mat4(1.0f);
-    transform = glm::rotate(transform, time, glm::vec3(0.0f, 0.0f, -1.0f));
-    transform = glm::translate(transform, glm::vec3(0.0f, 1.0f, 0.0f));
-    transform = glm::rotate(transform, time, glm::vec3(0.0f, 0.0f, -1.0f));
-
-    uint32_t transformLoc = glGetUniformLocation(opengl.GetShader()->m_ProgramID, "transform");
-    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
-
     glUniform4f(vertexColor, r, g, b, 1.0f);
-    glBindVertexArray(opengl.GetVAO(0));
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-    transform = glm::mat4(1.0f);
-    transform = glm::scale(transform, sin(time) * glm::vec3(1.0f, 1.0f, 1.0f));
-    transform = glm::rotate(transform, time, glm::vec3(0.0f, 0.0f, 1.0f));
-    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glm::mat4 view = glm::mat4(1.0f);
+    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+    glm::mat4 projection = glm::mat4(1.0f);
+    projection = glm::perspective(glm::radians(45.0f),
+				  (float)opengl.GetWindow()->GetWidth() / (float)opengl.GetWindow()->GetHeight(),
+				  0.1f,
+				  100.0f);
+    opengl.GetShader()->SetMat4("projection", projection);
+    opengl.GetShader()->SetMat4("view", view);
+
+    glBindVertexArray(opengl.GetVAO(0));
+    // glDrawArrays(GL_TRIANGLES, 0, 36);
+    // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+    for (uint32_t i = 0; i < 10; ++i) {
+      glm::mat4 model = glm::mat4(1.0f);
+      model = glm::translate(model, cubePositions[i]);
+      float angle = 20.0f * i;
+      model = glm::rotate(model, time * glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+      opengl.GetShader()->SetMat4("model", model);
+      glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
 
     glfwSwapBuffers(opengl.GetWindow()->GetOpenGLWindow());
     glfwPollEvents();

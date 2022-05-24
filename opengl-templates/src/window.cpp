@@ -55,6 +55,22 @@ GLFWwindow *Window::GetOpenGLWindow() {
   return this->m_Window;
 }
 
+uint32_t Window::GetWidth() {
+  return this->a_WindowWidth;
+}
+
+uint32_t Window::GetHeight() {
+  return this->a_WindowHeight;
+}
+
+void Window::SetWidth(uint32_t value) {
+  this->a_WindowWidth = value;
+}
+
+void Window::SetHeight(uint32_t value) {
+  this->a_WindowHeight = value;
+}
+
 bool Window::InitGLFW() {
   if (!glfwInit()) {
     std::cerr << "Could not initialize GLFW\n";
