@@ -6,10 +6,18 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#define OPENGL_VERSION_MAJOR 3
+#define OPENGL_VERSION_MINOR 3
+
 class Window {
 public:
   Window();
   ~Window();
+
+  // If both `width` and `height` is set to 0
+  // This will create a window of the size
+  // width = (primary monior width) / 1.75f
+  // height = width / 16 * 9
   bool CreateWindow(const char *title, uint32_t width = 0, uint32_t height = 0, bool centeredOnStartUp = true);
   GLFWwindow *GetOpenGLWindow();
   

@@ -32,6 +32,17 @@ void Texture::CreateTexture2D(GLint wrapping, GLint filter) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
 }
 
+void Texture::CreateTexture3D(GLint wrapping, GLint filter) {
+  glBindTexture(GL_TEXTURE_3D, this->m_TextureID);
+
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, wrapping);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, wrapping);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, wrapping);
+
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, filter);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, filter);
+}
+
 void Texture::LoadTexture(const char *file_path, GLint format, GLsizei depth) {
   int width, height, color_channels;
   unsigned char *data = stbi_load(file_path, &width, &height, &color_channels, 0);
@@ -55,15 +66,4 @@ void Texture::LoadTexture(const char *file_path, GLint format, GLsizei depth) {
 void Texture::ActiveTexture(GLenum index) {
   glActiveTexture(index);
   glBindTexture(this->m_Target, this->m_TextureID);
-}
-
-void Texture::CreateTexture3D(GLint wrapping, GLint filter) {
-  glBindTexture(GL_TEXTURE_3D, this->m_TextureID);
-
-  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, wrapping);
-  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, wrapping);
-  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, wrapping);
-
-  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, filter);
-  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, filter);
 }

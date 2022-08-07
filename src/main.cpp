@@ -12,21 +12,79 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "../opengl-templates/header/opengl-template.hpp"
 
+static glm::vec3 cameraPos	= glm::vec3(0.0f, 0.0f, 3.0f);
+static glm::vec3 cameraFront	= glm::vec3(0.0f, 0.0f, -1.0f);
+static glm::vec3 cameraUp	= glm::vec3(0.0f, 1.0f, 0.0f);
+
+static float sensitivty		= 0.1f;
+
+static bool first_mouse		= true;
+static float yaw		= -90.0f;
+static float pitch		= 0.0f;
+static float lastX		= 0.0f;
+static float lastY		= 0.0f;
+static float fov		= 45.0f;
+
+static float deltaTime		= 0.0f;
+static float lastFrame		= 0.0f;
+
 void process_input(GLFWwindow *window) {
-  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS or
-      glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
-    glfwSetWindowShouldClose(window, true);
-  } else if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-  } else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  const float cameraSpeed = 2.5f * deltaTime;
+
+  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS or glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) glfwSetWindowShouldClose(window, true);
+  if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) cameraPos += cameraSpeed * cameraFront;
+  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) cameraPos -= cameraSpeed * cameraFront;
+  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+}
+
+void mouse_callback(GLFWwindow *window, double xPosIn, double yPosIn) {
+  (void) window;
+  float xpos = (float)xPosIn;
+  float ypos = (float)yPosIn;
+
+  if (first_mouse) {
+    lastX = xpos;
+    lastY = ypos;
+    first_mouse = false;
   }
+  
+  float xoffset = xpos - lastX;
+  float yoffset = lastY - ypos;
+  lastX = xpos;
+  lastY = ypos;
+
+  xoffset *= sensitivty;
+  yoffset *= sensitivty;
+
+  yaw   += xoffset;
+  pitch += yoffset;
+
+  if (pitch > 89.0f) pitch = 89.0f;
+  if (pitch < -89.0f) pitch = -89.0f;
+  
+  glm::vec3 front;
+  front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+  front.y = sin(glm::radians(pitch));
+  front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+  cameraFront = glm::normalize(front);
+}
+
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
+  (void) window;
+  (void) xoffset;
+
+  fov -= (float) yoffset;
+  if (fov < 1.0f) fov = 1.0f;
+  if (fov > 45.0f) fov = 45.0f;
 }
 
 int main() {
-  const char *vsh_path = "./shader/vertex.glsl";
-  const char *fsh_path = "./shader/fragment.glsl";
-  const char *img_path = "./shader/ava.jpg";
+  const char *vsh_path	= "./shader/vertex.glsl";
+  const char *fsh_path	= "./shader/fragment.glsl";
+  const char *img_path	= "./shader/ava.jpg";
   const char *img_path2 = "./shader/awesomeface.png";
 
   float vertices[] = {
@@ -95,6 +153,14 @@ int main() {
   OpenGL &opengl = OpenGL::CreateInstance();
 
   opengl.GetWindow()->CreateWindow("Ugrhhh");
+
+  lastX = opengl.GetWindow()->GetWidth() / 2.0f;
+  lastY = opengl.GetWindow()->GetHeight() / 2.0f;
+
+  glfwSetCursorPosCallback(opengl.GetWindow()->GetOpenGLWindow(), mouse_callback);
+  glfwSetScrollCallback(opengl.GetWindow()->GetOpenGLWindow(), scroll_callback);
+  glfwSetInputMode(opengl.GetWindow()->GetOpenGLWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
   glEnable(GL_DEPTH_TEST);
   opengl.GetShader()->LoadShaders(vsh_path, fsh_path);
 
@@ -130,6 +196,10 @@ int main() {
   opengl.GetShader()->SetInteger("texture2", 1);
 
   while (!glfwWindowShouldClose(opengl.GetWindow()->GetOpenGLWindow())) {
+    float currentFrame = glfwGetTime();
+    deltaTime = currentFrame - lastFrame;
+    lastFrame = currentFrame;
+
     process_input(opengl.GetWindow()->GetOpenGLWindow());
 
     float time = glfwGetTime();
@@ -152,9 +222,10 @@ int main() {
     glUniform4f(vertexColor, r, g, b, 1.0f);
 
     glm::mat4 view = glm::mat4(1.0f);
-    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+    view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+    // view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
     glm::mat4 projection = glm::mat4(1.0f);
-    projection = glm::perspective(glm::radians(45.0f),
+    projection = glm::perspective(glm::radians(fov),
 				  (float)opengl.GetWindow()->GetWidth() / (float)opengl.GetWindow()->GetHeight(),
 				  0.1f,
 				  100.0f);
@@ -179,6 +250,5 @@ int main() {
   }
 
   opengl.CleanUp();
-
   return 0;
 }
