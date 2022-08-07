@@ -12,73 +12,17 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "../opengl-templates/header/opengl-template.hpp"
 
-static glm::vec3 cameraPos	= glm::vec3(0.0f, 0.0f, 3.0f);
-static glm::vec3 cameraFront	= glm::vec3(0.0f, 0.0f, -1.0f);
-static glm::vec3 cameraUp	= glm::vec3(0.0f, 1.0f, 0.0f);
-
-static float sensitivty		= 0.1f;
-
-static bool first_mouse		= true;
-static float yaw		= -90.0f;
-static float pitch		= 0.0f;
-static float lastX		= 0.0f;
-static float lastY		= 0.0f;
-static float fov		= 45.0f;
-
 static float deltaTime		= 0.0f;
 static float lastFrame		= 0.0f;
 
-void process_input(GLFWwindow *window) {
-  const float cameraSpeed = 2.5f * deltaTime;
-
+void process_input(GLFWwindow *window, Camera *camera) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS or glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) glfwSetWindowShouldClose(window, true);
   if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) cameraPos += cameraSpeed * cameraFront;
-  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) cameraPos -= cameraSpeed * cameraFront;
-  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-}
-
-void mouse_callback(GLFWwindow *window, double xPosIn, double yPosIn) {
-  (void) window;
-  float xpos = (float)xPosIn;
-  float ypos = (float)yPosIn;
-
-  if (first_mouse) {
-    lastX = xpos;
-    lastY = ypos;
-    first_mouse = false;
-  }
-  
-  float xoffset = xpos - lastX;
-  float yoffset = lastY - ypos;
-  lastX = xpos;
-  lastY = ypos;
-
-  xoffset *= sensitivty;
-  yoffset *= sensitivty;
-
-  yaw   += xoffset;
-  pitch += yoffset;
-
-  if (pitch > 89.0f) pitch = 89.0f;
-  if (pitch < -89.0f) pitch = -89.0f;
-  
-  glm::vec3 front;
-  front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-  front.y = sin(glm::radians(pitch));
-  front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-  cameraFront = glm::normalize(front);
-}
-
-void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
-  (void) window;
-  (void) xoffset;
-
-  fov -= (float) yoffset;
-  if (fov < 1.0f) fov = 1.0f;
-  if (fov > 45.0f) fov = 45.0f;
+  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) camera->MoveUp(deltaTime);
+  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) camera->MoveLeft(deltaTime);
+  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) camera->MoveDown(deltaTime);
+  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) camera->MoveRight(deltaTime);
 }
 
 int main() {
@@ -154,11 +98,11 @@ int main() {
 
   opengl.GetWindow()->CreateWindow("Ugrhhh");
 
-  lastX = opengl.GetWindow()->GetWidth() / 2.0f;
-  lastY = opengl.GetWindow()->GetHeight() / 2.0f;
+  opengl.GetMouse()->SetLastXPos(opengl.GetWindow()->GetWidth() / 2.0f);
+  opengl.GetMouse()->SetLastYPos(opengl.GetWindow()->GetHeight() / 2.0f);
 
-  glfwSetCursorPosCallback(opengl.GetWindow()->GetOpenGLWindow(), mouse_callback);
-  glfwSetScrollCallback(opengl.GetWindow()->GetOpenGLWindow(), scroll_callback);
+  opengl.SetCursorCallback();
+  opengl.SetScrollCallback();
   glfwSetInputMode(opengl.GetWindow()->GetOpenGLWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   glEnable(GL_DEPTH_TEST);
@@ -200,7 +144,7 @@ int main() {
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
 
-    process_input(opengl.GetWindow()->GetOpenGLWindow());
+    process_input(opengl.GetWindow()->GetOpenGLWindow(), opengl.GetCamera());
 
     float time = glfwGetTime();
     float r = (sin(time) / 2.0f) + 0.25f;
@@ -222,10 +166,10 @@ int main() {
     glUniform4f(vertexColor, r, g, b, 1.0f);
 
     glm::mat4 view = glm::mat4(1.0f);
-    view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+    view = glm::lookAt(opengl.GetCamera()->GetPosition(), opengl.GetCamera()->GetPosition() + opengl.GetCamera()->GetFrontVector(), opengl.GetCamera()->GetUpVector());
     // view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
     glm::mat4 projection = glm::mat4(1.0f);
-    projection = glm::perspective(glm::radians(fov),
+    projection = glm::perspective(glm::radians(opengl.GetCamera()->a_FOV),
 				  (float)opengl.GetWindow()->GetWidth() / (float)opengl.GetWindow()->GetHeight(),
 				  0.1f,
 				  100.0f);
