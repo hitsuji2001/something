@@ -4,6 +4,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "./window.hpp"
+
 class Mouse {
 public:
   float GetLastXPos();
@@ -11,15 +13,17 @@ public:
   float GetSensitivity();
   bool IsFirstMouse();
 
+  void SetFirstMouse(bool value);
   void SetLastXPos(float value);
   void SetLastYPos(float value);
-  void SetFirstMouse(bool value);
-
+  
   Mouse();
   ~Mouse();
 
 public:
   float a_Sensitivty;
+
+private:
 
 private:
   bool a_FirstMouse;

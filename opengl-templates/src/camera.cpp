@@ -1,15 +1,15 @@
 #include "../header/camera.hpp"
 
 Camera::Camera() {
-  this->a_Position = glm::vec3(0.0f, 0.0f, 3.0f);
-  this->a_Front    = glm::vec3(0.0f, 0.0f, -1.0f);
-  this->a_UpVector       = glm::vec3(0.0f, 1.0f, 0.0f);
+  this->a_Position	= glm::vec3(0.0f, 0.0f, 20.0f);
+  this->a_Front		= glm::vec3(0.0f, 0.0f, -1.0f);
+  this->a_UpVector      = glm::vec3(0.0f, 1.0f, 0.0f);
 
-  this->a_Yaw            = -90.0f;
-  this->a_Pitch          = 0.0f;
-  this->a_FOV            = 45.0f;
+  this->a_Yaw           = -90.0f;
+  this->a_Pitch         = 0.0f;
+  this->a_FOV           = 45.0f;
 
-  this->a_Speed    = 5.0f;
+  this->a_Speed		= 5.0f;
 }
 
 Camera::~Camera() {

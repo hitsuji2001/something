@@ -51,6 +51,10 @@ bool Window::CreateWindow(const char *title, uint32_t width, uint32_t height, bo
   return true;
 }
 
+void Window::SetMouseInputMode() {
+  glfwSetInputMode(this->m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
+
 GLFWwindow *Window::GetOpenGLWindow() {
   return this->m_Window;
 }

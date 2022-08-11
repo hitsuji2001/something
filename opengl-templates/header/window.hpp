@@ -19,12 +19,13 @@ public:
   // width = (primary monior width) / 1.75f
   // height = width / 16 * 9
   bool CreateWindow(const char *title, uint32_t width = 0, uint32_t height = 0, bool centeredOnStartUp = true);
-  GLFWwindow *GetOpenGLWindow();
   
 public:
   uint32_t GetWidth();
   uint32_t GetHeight();
+  GLFWwindow *GetOpenGLWindow();
 
+  void SetMouseInputMode();
   void SetWidth(uint32_t value);
   void SetHeight(uint32_t value);
 private:

@@ -7,10 +7,10 @@ OpenGL::OpenGL() {
   this->m_Window  = new Window();
   this->m_Shader  = new Shader();
 
-  this->m_Texture = new Texture [this->a_MaxTextureSize];
-  this->m_VAO	  = new uint32_t[this->a_MaxBufferSize];
-  this->m_VBO	  = new uint32_t[this->a_MaxBufferSize];
-  this->m_EBO	  = new uint32_t[this->a_MaxBufferSize];
+  this->m_Texture = new Texture();
+  this->m_VAO     = NULL;
+  this->m_VBO     = NULL;
+  this->m_EBO     = NULL;
 }
 
 void OpenGL::SetCursorCallback() {
@@ -29,28 +29,43 @@ void OpenGL::SetMouse(Mouse *mouse) {
   OpenGL::m_Mouse = mouse;
 }
 
-void OpenGL::CleanUp() {
-  glDeleteVertexArrays(this->a_MaxBufferSize, this->m_VAO);
-  glDeleteBuffers(this->a_MaxBufferSize, this->m_VBO);
-  glDeleteBuffers(this->a_MaxBufferSize, this->m_EBO);
+void OpenGL::SetVAO(VAO *vao) {
+  this->m_VAO = vao;
+}
 
-  delete[] this->m_Texture;
-  std::cout << "[INFO]: Successfully delete `Textures`" << std::endl;
-  delete[] this->m_VAO;
-  std::cout << "[INFO]: Successfully delete `VAOs`" << std::endl;
-  delete[] this->m_VBO;
-  std::cout << "[INFO]: Successfully delete `VBOs`" << std::endl;
-  delete[] this->m_EBO;
-  std::cout << "[INFO]: Successfully delete `EBOs`" << std::endl;
+void OpenGL::SetVBO(VBO *vbo) {
+  this->m_VBO = vbo;
+}
+
+void OpenGL::SetEBO(EBO *ebo) {
+  this->m_EBO = ebo;
+}
+
+void OpenGL::CleanUp() {
+  delete this->m_Texture;
 
   delete this->m_Shader;
   delete this->m_Window;
+
+  if (this->m_EBO != NULL) {
+    this->m_EBO->Delete();
+    delete this->m_EBO;
+  }
+  if (this->m_VAO != NULL) {
+    this->m_VAO->Delete();
+    delete this->m_VAO;
+  }
+  if (this->m_VBO != NULL) {
+    this->m_VBO->Delete();
+    delete this->m_VBO;
+  }
 
   delete OpenGL::m_Camera;
   delete OpenGL::m_Mouse;
 }
 
 OpenGL::~OpenGL() {
+  this->CleanUp();
   glfwTerminate();
 }
 
@@ -70,66 +85,20 @@ Window *OpenGL::GetWindow() {
   return this->m_Window;
 }
 
-Texture *OpenGL::GetTextureAt(uint32_t index) {
-  if (index >= this->a_MaxTextureSize) {
-    std::cerr << "[ERROR]: Index out of bound: `" << index << "`." << std::endl;
-    std::cerr << "         Max number of Texture is: `" << this->a_MaxTextureSize << "`. Considering changing the value in the `opengl-templates` header file." << std::endl;
-  }
-  return &this->m_Texture[index];
+Texture *OpenGL::GetTexture() {
+  return this->m_Texture;
 }
 
-uint32_t *OpenGL::GetVAOAddress(uint32_t index) {
-  if (index >= this->a_MaxBufferSize) {
-    std::cerr << "[ERROR]: Index out of bound. There is no VAO with such index: " << index << std::endl;;
-    std::cerr << "         Max number of VAOs  are: " << this->a_MaxBufferSize << std::endl;
-    exit(1);
-  }
-  return &this->m_VAO[index];
+VAO *OpenGL::GetVAO() {
+  return this->m_VAO;
 }
 
-uint32_t *OpenGL::GetVBOAddress(uint32_t index) {
-  if (index >= this->a_MaxBufferSize) {
-    std::cerr << "[ERROR]: Index out of bound. There is no VBO with such index: " << index << std::endl;
-    std::cerr << "         Max number of VBOs  are: " << this->a_MaxBufferSize << std::endl;
-    exit(1);
-  }
-  return &this->m_VBO[index];
+VBO *OpenGL::GetVBO() {
+  return this->m_VBO;
 }
 
-uint32_t *OpenGL::GetEBOAddress(uint32_t index) {
-  if (index >= this->a_MaxBufferSize) {
-    std::cerr << "[ERROR]: Index out of bound. There is no EBO with such index: " << index << std::endl;
-    std::cerr << "         Max number of EBOs  are: " << this->a_MaxBufferSize << std::endl;
-    exit(1);
-  }
-  return &this->m_EBO[index];
-}
-
-uint32_t OpenGL::GetVAO(uint32_t index) {
-  if (index >= this->a_MaxBufferSize) {
-    std::cerr << "[ERROR]: Index out of bound. There is no VAO with such index: " << index << std::endl;;
-    std::cerr << "         Max number of VAOs  are: " << this->a_MaxBufferSize << std::endl;
-    exit(1);
-  }
-  return this->m_VAO[index];
-}
-
-uint32_t OpenGL::GetVBO(uint32_t index) {
-  if (index >= this->a_MaxBufferSize) {
-    std::cerr << "[ERROR]: Index out of bound. There is no VBO with such index: " << index << std::endl;
-    std::cerr << "         Max number of VBOs  are: " << this->a_MaxBufferSize << std::endl;
-    exit(1);
-  }
-  return this->m_VBO[index];
-}
-
-uint32_t OpenGL::GetEBO(uint32_t index) {
-  if (index >= this->a_MaxBufferSize) {
-    std::cerr << "[ERROR]: Index out of bound. There is no EBO with such index: " << index;
-    std::cerr << ". Max number of EBOs  are: " << this->a_MaxBufferSize << std::endl;
-    exit(1);
-  }
-  return this->m_EBO[index];
+EBO *OpenGL::GetEBO() {
+  return this->m_EBO;
 }
 
 void OpenGL::CursorCallback(GLFWwindow *window, double xPosIn, double yPosIn) {

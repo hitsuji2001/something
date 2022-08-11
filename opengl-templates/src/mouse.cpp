@@ -1,8 +1,7 @@
 #include "../header/mouse.hpp"
 
-
 Mouse::Mouse() {
-  this->a_Sensitivty = 0.1f;
+  this->a_Sensitivty = 0.075f;
 
   this->a_XPos = 0.0f;
   this->a_YPos = 0.0f;

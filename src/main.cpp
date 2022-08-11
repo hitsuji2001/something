@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <ctime>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -12,10 +13,82 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "../opengl-templates/header/opengl-template.hpp"
 
-static float deltaTime		= 0.0f;
-static float lastFrame		= 0.0f;
+typedef struct {
+  float x;
+  float y;
+  float z;
+} Point;
 
-void process_input(GLFWwindow *window, Camera *camera) {
+float map(float input, float origin_min, float origin_max, float new_min, float new_max) {
+  float old_range = origin_max - origin_min;
+  float new_range = new_max - new_min;
+  float new_value;
+  
+  new_value = (float)((new_range * (input - origin_min)) / old_range) + new_min;
+
+  return new_value;
+}
+
+float random_range(int min, int max) {
+  float res = rand() % max + min;
+  if (res >= max) return max;
+  else return res;
+}
+
+void genererate_vertices(Point *vertices, int rows, int cols, int div, OpenGL &opengl) {
+  int index = 0;
+  for (int y = 0; y < cols; ++y) {
+    for (int x = 0; x < rows; ++x) {
+      Point p1, p2, p3, p5;
+      int w = opengl.GetWindow()->GetWidth();
+      int h = opengl.GetWindow()->GetHeight();
+
+      int org_mirange = 1;
+      int org_marange = 100;
+
+      int min_range = 0;
+      int max_range = 10;
+      p1 = {
+	map((x + 1) * div, 0, w, -10, 10),
+	// 0.0f,
+	map(random_range(org_mirange, org_marange), org_mirange, org_marange, min_range, max_range),
+	map((y + 0) * div, 0, h, -10, 10),
+      };
+
+      p2 = {
+	map((x + 1) * div, 0, w, -10, 10),
+	// 0.0f,
+	map(random_range(org_mirange, org_marange), org_mirange, org_marange, min_range, max_range),
+	map((y + 1) * div, 0, h, -10, 10),
+      };
+
+      p3 = {
+	map((x + 0) * div, 0, w, -10, 10),
+	// 0.0f,
+	map(random_range(org_mirange, org_marange), org_mirange, org_marange, min_range, max_range),
+	map((y + 0) * div, 0, h, -10, 10),
+      };
+
+      p5 = {
+	map((x + 0) * div, 0, w, -10, 10),
+	// 0.0f,
+	map(random_range(org_mirange, org_marange), org_mirange, org_marange, min_range, max_range),
+	map((y + 1) * div, 0, h, -10, 10),
+      };
+
+      vertices[index + 0] = p1;
+      vertices[index + 1] = p2;
+      vertices[index + 2] = p3;
+      vertices[index + 3] = p2;
+      vertices[index + 4] = p5;
+      vertices[index + 5] = p3;
+
+      index += 6;
+    }
+  }
+}
+
+void process_input(GLFWwindow *window, Camera *camera, float deltaTime) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS or glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) glfwSetWindowShouldClose(window, true);
   if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -23,176 +96,87 @@ void process_input(GLFWwindow *window, Camera *camera) {
   if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) camera->MoveLeft(deltaTime);
   if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) camera->MoveDown(deltaTime);
   if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) camera->MoveRight(deltaTime);
+  if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) camera->SetSpeed(1.5f);
+  if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE) camera->SetSpeed(5.0f);
 }
 
 int main() {
+  int rows;
+  int cols;
+  int div = 20;
+  srand(time(NULL));
+
   const char *vsh_path	= "./shader/vertex.glsl";
   const char *fsh_path	= "./shader/fragment.glsl";
-  const char *img_path	= "./shader/ava.jpg";
-  const char *img_path2 = "./shader/awesomeface.png";
-
-  float vertices[] = {
-     // positions        // colors         // texture coodinates
-    -0.5f, -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f,
-     0.5f, -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
-     0.5f,  0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f,
-     0.5f,  0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f,
-    -0.5f,  0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f,
-
-    -0.5f, -0.5f,  0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 0.0f,
-     0.5f, -0.5f,  0.5f, 0.0f, 0.5f, 0.0f, 1.0f, 0.0f,
-     0.5f,  0.5f,  0.5f, 0.0f, 0.5f, 0.0f, 1.0f, 1.0f,
-     0.5f,  0.5f,  0.5f, 0.0f, 0.5f, 0.0f, 1.0f, 1.0f,
-    -0.5f,  0.5f,  0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 0.0f,
-
-    -0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 0.5f, 1.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f, 0.0f, 0.0f, 0.5f, 1.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.5f, 0.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.5f, 0.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 0.5f, 0.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f, 0.0f, 0.0f, 0.5f, 1.0f, 0.0f,
-
-     0.5f,  0.5f,  0.5f, 0.0f, 0.5f, 0.0f, 1.0f, 0.0f,
-     0.5f,  0.5f, -0.5f, 0.0f, 0.5f, 0.0f, 1.0f, 1.0f,
-     0.5f, -0.5f, -0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 1.0f,
-     0.5f, -0.5f, -0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 1.0f,
-     0.5f, -0.5f,  0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 0.0f,
-     0.5f,  0.5f,  0.5f, 0.0f, 0.5f, 0.0f, 1.0f, 0.0f,
-
-    -0.5f, -0.5f, -0.5f, 0.5f, 0.0f, 0.2f, 0.0f, 1.0f,
-     0.5f, -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f,
-     0.5f, -0.5f,  0.5f, 0.5f, 0.3f, 0.0f, 1.0f, 0.0f,
-     0.5f, -0.5f,  0.5f, 0.5f, 0.0f, 0.9f, 1.0f, 0.0f,
-    -0.5f, -0.5f,  0.5f, 0.5f, 0.2f, 0.0f, 0.0f, 0.0f,
-    -0.5f, -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f,
-
-    -0.5f,  0.5f, -0.5f, 0.5f, 0.6f, 0.9f, 0.0f, 1.0f,
-     0.5f,  0.5f, -0.5f, 0.5f, 0.6f, 0.9f, 1.0f, 1.0f,
-     0.5f,  0.5f,  0.5f, 0.5f, 0.6f, 0.9f, 1.0f, 0.0f,
-     0.5f,  0.5f,  0.5f, 0.5f, 0.6f, 0.9f, 1.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f, 0.5f, 0.6f, 0.9f, 0.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f, 0.5f, 0.6f, 0.9f, 0.0f, 1.0f
-  };
-
-  glm::vec3 cubePositions[] = {
-    glm::vec3( 0.0f,  0.0f,  0.0f),
-    glm::vec3( 2.0f,  5.0f, -15.0f),
-    glm::vec3(-1.5f, -2.2f, -2.5f),
-    glm::vec3(-3.8f, -2.0f, -12.3f),  
-    glm::vec3( 2.4f, -0.4f, -3.5f),  
-    glm::vec3(-1.7f,  3.0f, -7.5f),  
-    glm::vec3( 1.3f, -2.0f, -2.5f),  
-    glm::vec3( 1.5f,  2.0f, -2.5f), 
-    glm::vec3( 1.5f,  0.2f, -1.5f), 
-    glm::vec3(-1.3f,  1.0f, -1.5f)  
-  };
-
-  // uint32_t indices[] = {
-  //   0, 1, 2,
-  //   0, 3, 2
-  // };
 
   OpenGL &opengl = OpenGL::CreateInstance();
 
   opengl.GetWindow()->CreateWindow("Ugrhhh");
+  float deltaTime = 0.0f;
+  float lastFrame = 0.0f;
+
+  glEnable(GL_DEPTH_TEST);
+
+  opengl.GetShader()->LoadShaders(vsh_path, fsh_path);
 
   opengl.GetMouse()->SetLastXPos(opengl.GetWindow()->GetWidth() / 2.0f);
   opengl.GetMouse()->SetLastYPos(opengl.GetWindow()->GetHeight() / 2.0f);
 
   opengl.SetCursorCallback();
   opengl.SetScrollCallback();
-  glfwSetInputMode(opengl.GetWindow()->GetOpenGLWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  opengl.GetWindow()->SetMouseInputMode();
 
-  glEnable(GL_DEPTH_TEST);
-  opengl.GetShader()->LoadShaders(vsh_path, fsh_path);
+  rows = opengl.GetWindow()->GetWidth() / div;
+  cols = opengl.GetWindow()->GetHeight() / div;
+  int vertices_size = 6 * rows * cols;
+  Point *vertices = new Point[vertices_size];
 
-  glGenVertexArrays(1, opengl.GetVAOAddress(0));
-  glGenBuffers(1, opengl.GetVBOAddress(0));
-  // glGenBuffers(1, opengl.GetEBOAddress(0));
+  genererate_vertices(vertices, rows, cols, div, opengl);
+  // for (int i = 0; i < vertices_size; ++i) {
+  //   printf("(%.2f, %.2f, %.2f)\n", vertices[i].x, vertices[i].y, vertices[i].z);
+  // }    
 
-  glBindVertexArray(opengl.GetVAO(0));
+  opengl.SetVAO(new VAO());
+  opengl.GetVAO()->Bind();
+  opengl.SetVBO(new VBO(vertices, vertices_size * sizeof(Point)));
 
-  glBindBuffer(GL_ARRAY_BUFFER, opengl.GetVBO(0));
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+  opengl.GetVAO()->LinkVBO(opengl.GetVBO(), 0);
 
-  // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl.GetEBO(0));
-  // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) 0);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (3 * sizeof(float)));
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*) (6 * sizeof(float)));
-  glEnableVertexAttribArray(2);
-
-  glBindVertexArray(0);
-
-  opengl.GetTextureAt(0)->CreateTexture(GL_TEXTURE_2D);
-  opengl.GetTextureAt(0)->LoadTexture(img_path, GL_RGB);
-
-  opengl.GetTextureAt(1)->CreateTexture(GL_TEXTURE_2D);
-  opengl.GetTextureAt(1)->LoadTexture(img_path2, GL_RGBA);
-
-  opengl.GetShader()->Use();
-  opengl.GetShader()->SetInteger("texture1", 0);
-  opengl.GetShader()->SetInteger("texture2", 1);
+  opengl.GetVBO()->Unbind();
+  opengl.GetVAO()->Unbind();
 
   while (!glfwWindowShouldClose(opengl.GetWindow()->GetOpenGLWindow())) {
     float currentFrame = glfwGetTime();
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
 
-    process_input(opengl.GetWindow()->GetOpenGLWindow(), opengl.GetCamera());
+    process_input(opengl.GetWindow()->GetOpenGLWindow(), opengl.GetCamera(), deltaTime);
 
-    float time = glfwGetTime();
-    float r = (sin(time) / 2.0f) + 0.25f;
-    float g = (cos(time) / 2.0f) + 0.25f;
-    float b = (sin(2.0f * time) / 2.0f) + 0.5f;
-
-    // glClearColor(0.93f, 0.94f, 0.82f, 1.0f);
-    glClearColor(r * cos(time), g * sin(time), b * cos(time * 2), 1.0f);
+    glClearColor(0.47f, 0.75f, 0.87f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
-    int vertexColor = glGetUniformLocation(opengl.GetShader()->m_ProgramID, "outColor");
-
-    opengl.GetTextureAt(0)->ActiveTexture(GL_TEXTURE0);
-    opengl.GetTextureAt(1)->ActiveTexture(GL_TEXTURE1);
-
-    opengl.GetShader()->Use();
-
-    glUniform4f(vertexColor, r, g, b, 1.0f);
-
-    glm::mat4 view = glm::mat4(1.0f);
-    view = glm::lookAt(opengl.GetCamera()->GetPosition(), opengl.GetCamera()->GetPosition() + opengl.GetCamera()->GetFrontVector(), opengl.GetCamera()->GetUpVector());
-    // view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+    glm::mat4 view       = glm::mat4(1.0f);
     glm::mat4 projection = glm::mat4(1.0f);
-    projection = glm::perspective(glm::radians(opengl.GetCamera()->a_FOV),
-				  (float)opengl.GetWindow()->GetWidth() / (float)opengl.GetWindow()->GetHeight(),
-				  0.1f,
-				  100.0f);
+    glm::mat4 model      = glm::mat4(1.0f);
+
+    view = glm::lookAt(opengl.GetCamera()->GetPosition(), opengl.GetCamera()->GetPosition() + opengl.GetCamera()->GetFrontVector(), opengl.GetCamera()->GetUpVector());
+    projection = glm::perspective(glm::radians(opengl.GetCamera()->a_FOV), (float)opengl.GetWindow()->GetWidth() / (float)opengl.GetWindow()->GetHeight(), 0.1f, 100.0f);
+    // model = glm::rotate(model, (float)glm::radians(45.0f), glm::vec3(-0.25f, 0.0f, 0.0f));
+
     opengl.GetShader()->SetMat4("projection", projection);
     opengl.GetShader()->SetMat4("view", view);
+    opengl.GetShader()->SetMat4("model", model);
 
-    glBindVertexArray(opengl.GetVAO(0));
-    // glDrawArrays(GL_TRIANGLES, 0, 36);
-    // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    opengl.GetShader()->Use();
+    opengl.GetVAO()->Bind();
 
-    for (uint32_t i = 0; i < 10; ++i) {
-      glm::mat4 model = glm::mat4(1.0f);
-      model = glm::translate(model, cubePositions[i]);
-      float angle = 20.0f * i;
-      model = glm::rotate(model, time * glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-      opengl.GetShader()->SetMat4("model", model);
-      glDrawArrays(GL_TRIANGLES, 0, 36);
-    }
+    glDrawArrays(GL_TRIANGLES, 0, vertices_size);
 
     glfwSwapBuffers(opengl.GetWindow()->GetOpenGLWindow());
     glfwPollEvents();
   }
 
-  opengl.CleanUp();
+  // delete[] vertices;
+
   return 0;
 }
